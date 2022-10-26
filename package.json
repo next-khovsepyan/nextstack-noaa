@@ -1,0 +1,61 @@
+{
+  "name": "nextstack-noaa",
+  "author": "Karen Hovsepyan <karenhovsepyan@nextstack.org>",
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/nextstack-noaa-api.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint --fix",
+    "prepare": "tsdx build"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "suncalc": "^1.8.0"
+  },
+  "devDependencies": {
+    "@types/suncalc": "^1.8.0",
+    "husky": "^4.2.5",
+    "tsdx": "^0.13.2",
+    "tslib": "^2.0.0",
+    "typescript": "^3.9.7"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": false,
+    "trailingComma": "es5"
+  },
+  "description": "NextStack NOAA package.",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/next-khovsepyan/nextstack-noaa.git"
+  },
+  "keywords": [
+    "NOAA",
+    "nextstack",
+    "weather",
+    "tides",
+    "buoys"
+  ],
+  "bugs": {
+    "url": "https://github.com/next-khovsepyan/nextstack-noaa/issues"
+  },
+  "homepage": "https://github.com/next-khovsepyan/nextstack-noaa#readme"
+}
