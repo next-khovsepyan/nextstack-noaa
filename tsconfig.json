@@ -4,11 +4,12 @@
     "types"
   ],
   "compilerOptions": {
-    "module": "esnext",
+    "module": "commonjs",
     "lib": [
       "dom",
       "esnext"
     ],
+    "target": "es6",
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
