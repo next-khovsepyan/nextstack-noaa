@@ -171,6 +171,24 @@ export interface Sunlight {
   dawn: Date | null;
 }
 
+export interface AirTempData {
+  t: string; v: string; f: string
+}
+
+
+export interface WindTempData {
+  t: string; s: string; d: string, dr: string, g: string, f: string
+}
+
+export interface AirTempModel {
+  metadata: object,
+  data: Array<AirTempData>
+}
+export interface LooseObject {
+  [key: string]: any
+}
+
+
 export enum Projects {
   TIDE = "https://api.tidesandcurrents.noaa.gov",
   SS = "https://api.sunrise-sunset.org"

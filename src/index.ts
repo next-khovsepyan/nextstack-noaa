@@ -3,6 +3,7 @@
 
 import axios, { AxiosResponse } from "axios";
 import suncalc from "suncalc";
+import { filterPredictions, windPredictions } from './helpers/filters';
 import {
   Params,
   TimeZones,
@@ -607,31 +608,31 @@ const predictions = (
     });
 };
 
-const weather = async (
+
+const getWeatherHiLo = async (
   stationId: number | string,
   startDate: string,
   endDate: string,
   datum: string | 'MSL',
   units: string | 'metric'
 ) => {
-  const airTemp = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=air_temperature`);
-  const watherTemp = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=water_temperature`);
-  const wind = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=wind`);
-  const humidity = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=humidity`);
+  const airTemp = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=air_temperature&interval=h`);
+  const filteredAitTemp = filterPredictions(airTemp?.data?.data);
 
-  const result: { time: string; airTemperature: string; watherTemp: number; wind: object, humidity: object }[] = [];
-  airTemp.data.data.map((item: { v: string; t: string }, index: number) => {
-    result.push({
-      time: item.t,
-      airTemperature: item.v,
-      watherTemp: watherTemp?.data?.data[index]?.v,
-      wind: wind?.data?.data[index],
-      humidity: humidity.data
-    })
-  })
+  const watherTemp = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=water_temperature&interval=h`);
+  const filterWatherTemp = filterPredictions(watherTemp?.data?.data);
+
+  const wind = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=wind&interval=h`);
+  const filterWind = windPredictions(wind?.data?.data);
+
+  const pressure = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=air_pressure&interval=h`);
+  const filterPressure = filterPredictions(pressure?.data?.data);
 
   return {
-    hours: result
+    airTemp: filteredAitTemp,
+    watherTemp: filterWatherTemp,
+    wind: filterWind,
+    pressure: filterPressure
   };
 };
 
@@ -646,6 +647,8 @@ const astrology = async (
     data: astrology?.data?.results
   };
 };
+
+
 
 export default {
   get,
@@ -662,7 +665,7 @@ export default {
   now,
   extremes,
   predictions,
-  weather,
+  getWeatherHiLo,
   astrology,
   getMoonlightWithCoordinates,
   getSunlightWithCoordinates
