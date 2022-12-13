@@ -1,5 +1,3 @@
-
-
 export enum Products {
   WATER_LEVEL = "water_level",
   AIR_TEMP = "air_temperature",
@@ -20,6 +18,8 @@ export enum Products {
   DATUMS = "datums",
   CURRENTS = "currents",
   CURRENT_PREDICTIONS = "currents_predictions",
+
+  EXTREMES = "extremewaterlevels"
 }
 
 export enum Datum {
@@ -109,6 +109,21 @@ export interface StationMetadata {
   error?: string | null;
 }
 
+export interface extremeWaterLevels {
+  stationId: string,
+  stationName: string,
+  state: string,
+  latitude: number,
+  longitude: number,
+  f1_gtmhhw: number,
+  f1_ltmllw: number
+}
+
+export interface extremes {
+  units: string;
+  ExtremeWaterLevels: [extremeWaterLevels]
+}
+
 export interface ReturnData {
   data: RawReturnData[];
 }
@@ -156,8 +171,7 @@ export interface Sunlight {
   dawn: Date | null;
 }
 
-
-
 export enum Projects {
   TIDE = "https://api.tidesandcurrents.noaa.gov",
+  SS = "https://api.sunrise-sunset.org"
 }

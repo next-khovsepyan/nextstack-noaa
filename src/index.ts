@@ -20,8 +20,9 @@ import {
   MoonPhases,
   Sunlight,
   Moonlight,
-  Projects
+  Projects,
 } from "./types";
+
 
 /**
  * @typedef StandardReturnValues
@@ -34,7 +35,7 @@ import {
 const round = (num: string | number): number => {
   const value = typeof num === "string" ? Number(num) : num;
 
-  if (Number.isInteger(value)) { 
+  if (Number.isInteger(value)) {
     return value;
   }
 
@@ -462,6 +463,38 @@ const moonlight = async (
   return suncalc.getMoonTimes(date, latitude, longitude);
 };
 
+
+/**
+ * moonlight - get moon rise/set times for a given day
+ *
+ * @param lat - Latitude
+ * @param lng - Longitude
+ * @param date - date to get the moon phase
+ *
+ * @typedef {Object} Moonlight
+ * @property {Date} rise - moonrise date/time
+ * @property {Date} set -moon set date/time
+ * @property {boolean} alwaysUp - if the sun is always above the horizon
+ * @property {boolean} alwaysDown - if the sun is always below the horizon
+ *
+ * @returns {Moonlight}
+ */
+const getMoonlightWithCoordinates = async (
+  lat: number,
+  lng: number,
+  date: Date = new Date(Date.now())
+): Promise<Moonlight> => {
+
+  if (!lat || !lng) {
+    return {
+      rise: null,
+      set: null,
+    };
+  }
+
+  return suncalc.getMoonTimes(date, lat, lng);
+};
+
 /**
  * getSunlight - get sun times for a given day at a given station
  *
@@ -495,6 +528,125 @@ const sunlight = async (
   return suncalc.getTimes(date, latitude, longitude);
 };
 
+
+/**
+ * getSunlight - get sun times for a given day at a given station
+ *
+ * @param stationId - ID of a station to get data for (station IDs can be found here: https://tidesandcurrents.noaa.gov/stations.html)
+ * @param date - date to get the moon phase
+ */
+const getSunlightWithCoordinates = async (
+  lat: number,
+  lng: number,
+  date: Date = new Date(Date.now())
+): Promise<Sunlight> => {
+
+  if (!lat || !lng) {
+    return {
+      sunrise: null,
+      sunriseEnd: null,
+      goldenHourEnd: null,
+      solarNoon: null,
+      sunsetStart: null,
+      sunset: null,
+      dusk: null,
+      nauticalDusk: null,
+      night: null,
+      nadir: null,
+      nightEnd: null,
+      nauticalDawn: null,
+      dawn: null,
+    };
+  }
+
+  return suncalc.getTimes(date, lat, lng);
+};
+
+
+/**
+ * extremes
+ *
+ * @param stationId - ID of a station to get data for (station IDs can be found here: https://tidesandcurrents.noaa.gov/stations.html)
+ */
+const extremes = (
+  stationId: number | string,
+  startDate: string,
+  endDate: string,
+  datum: string | 'MSL',
+  units: string | 'english'
+) => {
+  return axios
+    .get(`${Projects.TIDE}/api/prod/datagetter?begin_date=${startDate}&end_date=${endDate}&station=${stationId}&product=predictions&datum=${datum}&time_zone=lst_ldt&interval=hilo&units=${units}&application=DataAPI_Sample&format=json`)
+    .then(res => {
+      if (!res || !res.data) {
+        throw new Error("Something went wrong.");
+      }
+
+      const predictions = res.data.predictions;
+      return predictions;
+    });
+};
+
+
+const predictions = (
+  stationId: number | string,
+  startDate: string,
+  endDate: string,
+  datum: string
+) => {
+  return axios
+
+    .get(`${Projects.TIDE}/api/prod/datagetter?begin_date=${startDate}&end_date=${endDate}&station=${stationId}&product=predictions&datum=${datum}&time_zone=GMT&units=metric&application=DataAPI_Sample&format=json&interval=h`)
+    .then(res => {
+      if (!res || !res.data) {
+        throw new Error("Something went wrong.");
+      }
+      console.log(res)
+      const predictions = res.data.predictions;
+      return predictions;
+    });
+};
+
+const weather = async (
+  stationId: number | string,
+  startDate: string,
+  endDate: string,
+  datum: string | 'MSL',
+  units: string | 'metric'
+) => {
+  const airTemp = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=air_temperature`);
+  const watherTemp = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=water_temperature`);
+  const wind = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=wind`);
+  const humidity = await axios.get(`${Projects.TIDE}/api/prod/datagetter?application=DataAPI_Sample&begin_date=${startDate}&datum=${datum}&end_date=${endDate}&station=${stationId}&time_zone=gmt&units=${units}&format=json&product=humidity`);
+
+  const result: { time: string; airTemperature: string; watherTemp: number; wind: object, humidity: object }[] = [];
+  airTemp.data.data.map((item: { v: string; t: string }, index: number) => {
+    result.push({
+      time: item.t,
+      airTemperature: item.v,
+      watherTemp: watherTemp?.data?.data[index]?.v,
+      wind: wind?.data?.data[index],
+      humidity: humidity.data
+    })
+  })
+
+  return {
+    hours: result
+  };
+};
+
+const astrology = async (
+  lat: string,
+  lng: string,
+  date: string,
+) => {
+  const curDate = date ? date : 'today';
+  const astrology = await axios.get(`${Projects.SS}/json?lat=${lat}&lng=${lng}&date=${curDate}`);
+  return {
+    data: astrology?.data?.results
+  };
+};
+
 export default {
   get,
   tidePredictions,
@@ -508,5 +660,10 @@ export default {
   moonlight,
   sunlight,
   now,
-
+  extremes,
+  predictions,
+  weather,
+  astrology,
+  getMoonlightWithCoordinates,
+  getSunlightWithCoordinates
 };
