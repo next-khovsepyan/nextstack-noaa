@@ -2,6 +2,7 @@
 
 
 import axios, { AxiosResponse } from "axios";
+import moment from "moment";
 import suncalc from "suncalc";
 import { filterPredictions, windPredictions } from './helpers/filters';
 import {
@@ -374,7 +375,7 @@ const currentWind = (
  */
 const moonPhase = (
   date: Date = new Date(Date.now())
-): { emoji: string; phase: string } => {
+): { emoji: string; phase: string, value: number } => {
   const { phase } = suncalc.getMoonIllumination(date);
 
   const newPhase = phase >= 0 && phase <= 0.125;
@@ -390,47 +391,56 @@ const moonPhase = (
     return {
       emoji: "🌑",
       phase: MoonPhases.NEW,
+      value: phase
     };
   } else if (waxCres) {
     return {
       emoji: "🌒",
       phase: MoonPhases.WAX_CRES,
+      value: phase
     };
   } else if (quarCres) {
     return {
       emoji: "🌓",
       phase: MoonPhases.QUAR_CRES,
+      value: phase
     };
   } else if (waxGibb) {
     return {
       emoji: "🌔",
       phase: MoonPhases.WAX_GIBB,
+      value: phase
     };
   } else if (full) {
     return {
       emoji: "🌕",
       phase: MoonPhases.FULL,
+      value: phase
     };
   } else if (wanGibb) {
     return {
       emoji: "🌖",
       phase: MoonPhases.WAN_GIBB,
+      value: phase
     };
   } else if (lastQuar) {
     return {
       emoji: "🌗",
       phase: MoonPhases.LAST_QUAR,
+      value: phase
     };
   } else if (wanCres) {
     return {
       emoji: "🌘",
       phase: MoonPhases.WAN_CRES,
+      value: phase
     };
   }
 
   return {
     emoji: "",
     phase: "",
+    value: 0,
   };
 };
 
@@ -574,7 +584,7 @@ const extremes = (
   startDate: string,
   endDate: string,
   datum: string | 'MSL',
-  units: string | 'english'
+  units: string | 'metric'
 ) => {
   return axios
     .get(`${Projects.TIDE}/api/prod/datagetter?begin_date=${startDate}&end_date=${endDate}&station=${stationId}&product=predictions&datum=${datum}&time_zone=lst_ldt&interval=hilo&units=${units}&application=DataAPI_Sample&format=json`)
@@ -586,6 +596,37 @@ const extremes = (
       const predictions = res.data.predictions;
       return predictions;
     });
+};
+
+
+/**
+ * extremes
+ *
+ * @param stationId - ID of a station to get data for (station IDs can be found here: https://tidesandcurrents.noaa.gov/stations.html)
+ */
+const getCurrentExtremes = (
+  stationId: number | string,
+  datum: string | 'MSL',
+  units: string | 'metric'
+) => {
+  try {
+    const date = moment().format('YYYYMMDD');
+    return axios
+      .get(`${Projects.TIDE}/api/prod/datagetter?begin_date=${date}&end_date=${date}&station=${stationId}&product=predictions&datum=${datum}&time_zone=lst_ldt&interval=hilo&units=${units}&application=DataAPI_Sample&format=json`)
+      .then(res => {
+        if (!res || !res.data) {
+          throw new Error("Something went wrong.");
+        }
+
+        const predictions = res.data.predictions;
+        return predictions;
+      }).catch(() => {
+        return [];
+      });
+  } catch (error) {
+    return [];
+  }
+
 };
 
 
@@ -668,5 +709,6 @@ export default {
   getWeatherHiLo,
   astrology,
   getMoonlightWithCoordinates,
-  getSunlightWithCoordinates
+  getSunlightWithCoordinates,
+  getCurrentExtremes
 };

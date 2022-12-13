@@ -1,5 +1,5 @@
-import moment from "moment";
 import { AirTempData, LooseObject, WindTempData } from "types";
+import moment from 'moment';
 export const filterPredictions = (items: Array<AirTempData>) => {
   let result: { date: object, high: string, low: string }[] = [];
   const grupped = groupByDate(items);
