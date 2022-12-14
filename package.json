@@ -1,7 +1,7 @@
 {
   "name": "nextstack-noaa",
   "author": "Karen Hovsepyan <karenhovsepyan@nextstack.org>",
-  "version": "0.3.7",
+  "version": "0.3.9",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/nextstack-noaa-api.esm.js",
