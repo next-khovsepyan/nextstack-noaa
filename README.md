@@ -11,6 +11,10 @@ This project requires NodeJS (version 14 or later) and NPM.
 To make sure you have them available on your machine,
 try running the following command.
 
+## Notice:
+
+We are pleased to announce the release of NOAA Station Data, an npm package that provides access to a wide range of NOAA station data. While the package is available for use, please note that the product documentation is not yet complete. We are working hard to provide a fully documented version soon. In the meantime, please use the methods provided in the documentation to access the data you need. Thank you for your patience and understanding.
+
 ```sh
 $ npm -v && node -v
 6.14.16
